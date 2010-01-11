@@ -24,6 +24,8 @@ require 'active_record'
 #   book.actors => "Rod Serling"
 
 module ActiveRecord::Validations::ClassMethods
+  # Validate associations through the inheritance chain and pass the error 
+  # messages back through
   def validates_associated(*associations)
     associations.each do |association|
       class_eval do
@@ -39,6 +41,23 @@ module ActiveRecord::Validations::ClassMethods
           end
         end
       end
+    end
+  end
+end
+
+class ActiveRecord::Associations::AssociationProxy
+
+  alias_method :rails_raise_on_type_mismatch, :raise_on_type_mismatch
+
+  # Make type-checking "inheritance-friendly"
+  def raise_on_type_mismatch(record)
+    # check if record does inheritance
+    if record.respond_to? :superclass 
+      unless record.superclass == @reflection.class_name.constantize
+        rails_raise_on_type_mismatch(record)
+      end
+    else
+      rails_raise_on_type_mismatch(record)
     end
   end
 end
@@ -94,7 +113,7 @@ class ActiveRecord::Base
     end
 
     define_method(:superclass) do
-      association_id
+      association_id.to_s.camelize.constantize
     end
 
     define_method(:column_for_attribute) do |att|
