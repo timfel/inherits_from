@@ -66,31 +66,31 @@ class ActiveRecord::Base
     inherited_reflections = association_class.reflections.map { |key,value| key.to_s }
     
     (inherited_column_names + inherited_reflections).each do |name|
-    	define_method(name) do
-    		init_inherited_assoc(association_id)
-    		klass = send(association_id)
+      define_method(name) do
+        init_inherited_assoc(association_id)
+        klass = send(association_id)
       
-    		klass.send(name)
-    	end
+        klass.send(name)
+      end
     
-    	define_method("#{name}=") do |new_value|
-    		init_inherited_assoc(association_id)
-    		klass = send(association_id)
+      define_method("#{name}=") do |new_value|
+        init_inherited_assoc(association_id)
+        klass = send(association_id)
       
-    		klass.send("#{name}=", new_value)
-    	end
+        klass.send("#{name}=", new_value)
+      end
     end
     
     inherited_reflections.each do |name|
-    	%w{ build create }.each do |method|
-    		define_method("#{method}_#{name}") do |*params|
-	    		init_inherited_assoc(association_id)
-    			klass = send(association_id)
+      %w{ build create }.each do |method|
+        define_method("#{method}_#{name}") do |*params|
+          init_inherited_assoc(association_id)
+          klass = send(association_id)
       
-    			klass.send("#{method}_#{name}", *params)
-    		end
-    	end
-    	
+          klass.send("#{method}_#{name}", *params)
+        end
+      end
+      
     end
 
     define_method(:superclass) do
@@ -113,7 +113,7 @@ class ActiveRecord::Base
   def self.is_a_superclass
     define_method('subobject') do 
       subtype.constantize.send("find_by_#{self.class.name.underscore}_id", send("id"))
-  	end
+    end
   end
   
   private
