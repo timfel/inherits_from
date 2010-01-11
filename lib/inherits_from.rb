@@ -92,6 +92,14 @@ class ActiveRecord::Base
     	end
     	
     end
+
+    define_method(:superclass) do
+      association_id
+    end
+
+    define_method(:column_for_attribute) do |att|
+      super(att) || association_class.columns_hash[att.to_s]
+    end
     
     before_callback = <<-end_eval
       init_inherited_assoc("#{association_id}")
