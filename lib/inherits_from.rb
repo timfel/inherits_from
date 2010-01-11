@@ -23,6 +23,26 @@ require 'active_record'
 #   book.name => "Twilight Zone Season 1"
 #   book.actors => "Rod Serling"
 
+module ActiveRecord::Validations::ClassMethods
+  def validates_associated(*associations)
+    associations.each do |association|
+      class_eval do
+        validates_each(associations) do |record, associate_name, value|
+          associates = record.send(associate_name)
+          associates = [associates] unless associates.respond_to?('each')
+          associates.each do |associate|
+            if associate && !associate.valid?
+              associate.errors.each do |key, value|
+                record.errors.add(key, value)
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+end
+
 class ActiveRecord::Base
   attr_reader :reflection
   
